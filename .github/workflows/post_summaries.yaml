@@ -58,9 +58,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             var fs = require('fs');
-            var markdown = fs.readFileSync('./comment.md');
+            var markdown = fs.readFileSync('./comment.md', 'utf8');
             if (fs.existsSync('./commentId')) {
-              var comment_number = Number(fs.readFileSync('./commentId'));
+              var comment_number = Number(fs.readFileSync('./commentId', 'utf8'));
               
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -70,7 +70,7 @@ jobs:
               });
             }
             else{
-              var issue_number = Number(fs.readFileSync('./issueNumber'));
+              var issue_number = Number(fs.readFileSync('./issueNumber', 'utf8'));
 
               await github.rest.issues.createComment({
                 owner: context.repo.owner,

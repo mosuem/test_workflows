@@ -114,7 +114,7 @@ jobs:
           echo ${{ github.event.number }} > current_repo/output/issueNumber
 
       - name: Upload folder with number and markdown
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@65d862660abb392b8c4a3d1195a2108db131dd05
         with:
           name: output
           path: current_repo/output/
