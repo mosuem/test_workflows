@@ -1,0 +1,125 @@
+# A CI configuration to check PR health.
+
+name: Health
+
+# Callers of this workflow should use it as follows:
+#
+# name: Health
+# on:
+#   pull_request:
+#     branches: [ main ]
+#     types: [opened, synchronize, reopened, labeled, unlabeled]
+# jobs:
+#   health:
+#     uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
+#     with:
+#       coverage_web: true #If the coverage should run browser tests
+
+# Callers may optionally specify the version of the SDK to use when running the
+# health check. This can be useful if your package has a very recent minimum SDK
+# constraint. This is done via the `sdk` input parameter. Note that this
+# parameter is not required; it defaults to `stable` - using the most recent
+# stable release of the Dart SDK.
+# 
+# The checks can also be restricted to any subset of version, changelog, and license,
+# if needed.
+#
+# jobs:
+#   health:
+#     uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
+#     with:
+#       sdk: beta
+#       checks: "version changelog license coverage"
+
+on:
+  workflow_call:
+    inputs:
+      sdk:
+        description: >-
+          The channel, or a specific version from a channel, to install
+          ('2.19.0','stable', 'beta', 'dev'). Using one of the three channels
+          will give you the latest version published to that channel.
+        default: "stable"
+        required: false
+        type: string
+      checks:
+        description: What to check for in the PR health check - any subset of "version changelog license"
+        default: "version,changelog,license,coverage"
+        type: string
+        required: false
+      local_debug:
+        description: Whether to use a local copy of package:firehose - only for debug
+        default: false
+        type: boolean
+        required: false
+      upload_coverage:
+        description: Whether to upload the coverage to coveralls
+        default: true
+        type: boolean
+        required: false
+      coverage_web:
+        description: Whether to run `dart test -p chrome` for coverage
+        default: false
+        type: boolean
+        required: false
+
+jobs:
+  health:
+    # These permissions are required for us to create comments on PRs.
+    permissions:
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          path: current_repo/
+      
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base_repo/
+          
+      - uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: ${{ inputs.sdk }}
+
+      - name: Install coverage
+        run: dart pub global activate coverage
+
+      - name: Install firehose
+        run: dart pub global activate firehose
+        if:  ${{ !inputs.local_debug }}
+
+      - name: Install local firehose
+        run: dart pub global activate --source path current_repo/pkgs/firehose/
+        if:  ${{ inputs.local_debug }} 
+
+      - name: Check PR health
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.number }}
+          PR_LABELS: "${{ join(github.event.pull_request.labels.*.name) }}"
+        run: cd current_repo/ && dart pub global run firehose:health --checks ${{ inputs.checks }} ${{ fromJSON('{"true":"--coverage_web","false":""}')[inputs.coverage_web] }}
+
+      - name: Upload coverage to Coveralls
+        if: ${{ inputs.upload_coverage }}
+        uses: coverallsapp/github-action@c7885c00cb7ec0b8f9f5ff3f53cddb980f7a4412
+        with:
+          format: lcov
+          base-path: current_repo/
+          compare-sha: ${{ github.event.pull_request.base.ref }}
+          allow-empty: true
+
+      - name: Save PR number
+        run: |
+          echo ${{ github.event.number }} > current_repo/output/issueNumber
+
+      - name: Upload folder with number and markdown
+        uses: actions/upload-artifact@v2
+        with:
+          name: output
+          path: output/
