@@ -29,6 +29,10 @@ jobs:
                run_id: ${{github.event.workflow_run.id }},
             });
             console.log('matchArtifact')
+            console.log(artifacts.data.artifacts.length)
+            for (let data of artifacts.data.artifacts) {
+                console.log(data);
+            }
             var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "output"
             })[0];
