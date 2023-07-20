@@ -26,7 +26,7 @@ jobs:
             var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               run_id: ${{github.event.workflow_run.id }},
+               run_id: ${{ github.event.workflow_run.id }},
             });
             console.log('matchArtifact');
             console.log(artifacts.data.artifacts.length);
@@ -46,7 +46,7 @@ jobs:
             });
             console.log('writeFileSync');
             var fs = require('fs');
-            fs.writeFileSync('${{github.workspace}}/comment.zip', Buffer.from(download.data));
+            fs.writeFileSync('${{ github.workspace }}/comment.zip', Buffer.from(download.data));
       - run: unzip comment.zip
 
 
