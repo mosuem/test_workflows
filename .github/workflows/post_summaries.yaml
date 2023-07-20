@@ -22,25 +22,29 @@ jobs:
         uses: actions/github-script@6f00a0b667f9463337970371ccda9072ee86fb27
         with:
           script: |
-            console.log('listWorkflowRunArtifacts')
+            console.log('listWorkflowRunArtifacts');
             var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
                run_id: ${{github.event.workflow_run.id }},
             });
-            console.log('matchArtifact')
+            console.log('matchArtifact');
+            console.log(artifacts.data.artifacts.length);
+            for (let data of artifacts.data.artifacts) {
+                console.log(data);
+            }
             var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "output"
             })[0];
             console.log(JSON.stringify(matchArtifact, null, 4));
-            console.log('download')
+            console.log('download');
             var download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
                artifact_id: matchArtifact.id,
                archive_format: 'zip',
             });
-            console.log('writeFileSync')
+            console.log('writeFileSync');
             var fs = require('fs');
             fs.writeFileSync('${{github.workspace}}/comment.zip', Buffer.from(download.data));
       - run: unzip comment.zip
