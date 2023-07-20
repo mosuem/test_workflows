@@ -9,5 +9,6 @@ jobs:
   health:
     uses: ./.github/workflows/health.yaml
     with:
-      local_debug: true
       coverage_web: false
+      checks: "version,license"
+      upload_coverage: false
