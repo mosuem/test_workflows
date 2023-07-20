@@ -89,7 +89,7 @@ jobs:
         run: dart pub global activate coverage
 
       - name: Install firehose
-        run: dart pub global activate --source git https://github.com/dart-lang/ecosystem/tree/main/pkgs/firehose
+        run: dart pub global activate -sgit  https://github.com/dart-lang/ecosystem.git --git-path pkgs/firehose
 
       - name: Check PR health
         if: ${{ github.event_name == 'pull_request' }}
