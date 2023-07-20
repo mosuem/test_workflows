@@ -89,12 +89,7 @@ jobs:
         run: dart pub global activate coverage
 
       - name: Install firehose
-        run: dart pub global activate firehose
-        if:  ${{ !inputs.local_debug }}
-
-      - name: Install local firehose
-        run: dart pub global activate --source path current_repo/pkgs/firehose/
-        if:  ${{ inputs.local_debug }} 
+        run: dart pub global activate --source git https://github.com/dart-lang/ecosystem/tree/main/pkgs/firehose
 
       - name: Check PR health
         if: ${{ github.event_name == 'pull_request' }}
