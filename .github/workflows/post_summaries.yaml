@@ -32,6 +32,7 @@ jobs:
             var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "output"
             })[0];
+            console.log(JSON.stringify(matchArtifact, null, 4));
             console.log('download')
             var download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
