@@ -1,0 +1,14 @@
+# A CI configuration to auto-publish pub packages.
+
+name: Publish
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    tags: [ '[A-z]+-v[0-9]+.[0-9]+.[0-9]+' ]
+
+jobs:
+  publish:
+    if: ${{ github.repository_owner == 'mosuem' }}
+    uses: mosuem/ecosystem/.github/workflows/publish.yaml@394c1c3255a39494ad4592f89b6b32eff7f646e5
